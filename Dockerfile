@@ -18,7 +18,7 @@ RUN apt-get clean
 
 # Install needed extensions
 # Here you can install any other extension that you need during the test and deployment process
-RUN docker-php-ext-install pdo_mysql zip mbstring pdo_sqlite curl json intl gd xml bz2 opcache
+RUN docker-php-ext-install pdo_mysql zip mbstring pdo_sqlite curl json intl gd xml bz2 opcache gmp
 
 # Install & enable Xdebug for code coverage reports
 RUN pecl install xdebug
