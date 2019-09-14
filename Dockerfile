@@ -13,7 +13,8 @@ RUN apt-get update && \
     # Install PHP and composer dependencies
     apt-get install -qq git curl libmcrypt-dev libjpeg-dev libpng-dev libfreetype6-dev libbz2-dev nodejs \
         libcurl4-gnutls-dev libicu-dev libvpx-dev libxpm-dev zlib1g-dev libxml2-dev libexpat1-dev libgmp3-dev \
-        libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev && \
+        libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev \
+        libzip-dev && \
 
     # Clear out the local repository of retrieved package files
     apt-get clean
