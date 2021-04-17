@@ -8,7 +8,7 @@ build-main:
         - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
 
         - |
-            if [ "$PHP_VERSION" = "8.0" && "$NODE_VERSION" = "14" ]; then 
+            if [ "$PHP_VERSION" = "8.0" ] && [ "$NODE_VERSION" = "14" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
                 docker push "$CI_REGISTRY_IMAGE:latest"
             fi
