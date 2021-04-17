@@ -12,6 +12,16 @@ build-main:
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
                 docker push "$CI_REGISTRY_IMAGE:latest"
             fi
+        - |
+            if [ "$PHP_VERSION" = "8.0" ]; then 
+                docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
+                docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
+            fi
+        - |
+            if [ "$NODE_VERSION" = "14" ]; then 
+                docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
+                docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
+            fi
     parallel:
         matrix:
             -   PHP_VERSION: ["7.4", "8.0"]
