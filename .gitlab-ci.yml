@@ -1,26 +1,34 @@
 before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - |
+        [ "$DH_REGISTRY_IMAGE" != "" ] && docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
 
 build-main:
     stage: build
     script:
         - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
+
         - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
+        - |
+            [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
 
         - |
             if [ "$PHP_VERSION" = "8.0" ] && [ "$NODE_VERSION" = "14" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
                 docker push "$CI_REGISTRY_IMAGE:latest"
+                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:latest" && docker push "$DH_REGISTRY_IMAGE:latest"
             fi
         - |
             if [ "$PHP_VERSION" = "8.0" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
                 docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
+                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:node$NODE_VERSION"
             fi
         - |
             if [ "$NODE_VERSION" = "14" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
                 docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
+                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION"
             fi
     parallel:
         matrix:
