@@ -1,3 +1,7 @@
+variables:
+    LATEST_PHP_VERSION: "8.0"
+    LATEST_NODE_VERSION: "14"
+
 before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - |
@@ -13,19 +17,19 @@ build-main:
             [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
 
         - |
-            if [ "$PHP_VERSION" = "8.0" ] && [ "$NODE_VERSION" = "14" ]; then 
+            if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ] && [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
                 docker push "$CI_REGISTRY_IMAGE:latest"
                 [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:latest" && docker push "$DH_REGISTRY_IMAGE:latest"
             fi
         - |
-            if [ "$PHP_VERSION" = "8.0" ]; then 
+            if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
                 docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
                 [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:node$NODE_VERSION"
             fi
         - |
-            if [ "$NODE_VERSION" = "14" ]; then 
+            if [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
                 docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
                 docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
                 [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION"
@@ -33,7 +37,7 @@ build-main:
     parallel:
         matrix:
             -   PHP_VERSION: ["7.4", "8.0"]
-                NODE_VERSION: ["12", "14"]
+                NODE_VERSION: ["12", "14", "16"]
     tags:
         - docker
     only:
@@ -45,8 +49,8 @@ build:
         - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" .
         - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG"
     variables:
-        PHP_VERSION: "8.0"
-        NODE_VERSION: "14"
+        PHP_VERSION: "$LATEST_PHP_VERSION"
+        NODE_VERSION: "$LATEST_NODE_VERSION"
     tags:
         - docker
     except:
