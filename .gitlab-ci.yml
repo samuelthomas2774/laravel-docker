@@ -41,17 +41,28 @@ build-main:
     tags:
         - docker
     only:
-        - main
+        refs:
+            - main
+        changes:
+            - .gitlab-ci.yml
+            - Dockerfile
 
 build:
     stage: build
     script:
         - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" .
         - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG"
+
+        - docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
+        - docker push "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
     variables:
         PHP_VERSION: "$LATEST_PHP_VERSION"
         NODE_VERSION: "$LATEST_NODE_VERSION"
     tags:
         - docker
+    only:
+        changes:
+            - .gitlab-ci.yml
+            - Dockerfile
     except:
         - main
