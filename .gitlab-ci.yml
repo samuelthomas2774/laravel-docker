@@ -1,6 +1,6 @@
 variables:
     LATEST_PHP_VERSION: "8.0"
-    LATEST_NODE_VERSION: "14"
+    LATEST_NODE_VERSION: "16"
 
 before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
@@ -37,7 +37,7 @@ build-main:
     parallel:
         matrix:
             -   PHP_VERSION: ["7.4", "8.0"]
-                NODE_VERSION: ["12", "14", "16"]
+                NODE_VERSION: ["12", "14", "16", "17"]
     tags:
         - docker
     only:
