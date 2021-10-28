@@ -10,7 +10,10 @@ before_script:
 build-main:
     stage: build
     script:
-        - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
+        - PHP_IMAGE_TAG="$PHP_VERSION"
+        - PHP_VERSION="${PHP_VERSION%-rc}"
+
+        - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
 
         - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
         - |
@@ -36,7 +39,7 @@ build-main:
             fi
     parallel:
         matrix:
-            -   PHP_VERSION: ["7.4", "8.0"]
+            -   PHP_VERSION: ["7.4", "8.0", "8.1-rc"]
                 NODE_VERSION: ["12", "14", "16", "17"]
     tags:
         - docker
