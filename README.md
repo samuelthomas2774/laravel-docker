@@ -10,14 +10,14 @@ Tags
 
 Tag                 | PHP version   | Node.js version
 --------------------|---------------|-------------------
-latest              | Latest (8.0)  | Latest LTS (16)
+latest              | Latest (8.1)  | Latest LTS (16)
 php7.4              | 7.4           | Latest LTS (16)
 php8.0              | 8.0           | Latest LTS (16)
-php8.1              | 8.1-rc        | Latest LTS (16)
-node12              | Latest (8.0)  | 12
-node14              | Latest (8.0)  | 14
-node16              | Latest (8.0)  | 16
-node17              | Latest (8.0)  | 17
+php8.1              | 8.1           | Latest LTS (16)
+node12              | Latest (8.1)  | 12
+node14              | Latest (8.1)  | 14
+node16              | Latest (8.1)  | 16
+node17              | Latest (8.1)  | 17
 php7.4-node12       | 7.4           | 12
 php7.4-node14       | 7.4           | 14
 php7.4-node16       | 7.4           | 16
@@ -26,10 +26,10 @@ php8.0-node12       | 8.0           | 12
 php8.0-node14       | 8.0           | 14
 php8.0-node16       | 8.0           | 16
 php8.0-node17       | 8.0           | 17
-php8.1-node12       | 8.1-rc        | 12
-php8.1-node14       | 8.1-rc        | 14
-php8.1-node16       | 8.1-rc        | 16
-php8.1-node17       | 8.1-rc        | 17
+php8.1-node12       | 8.1           | 12
+php8.1-node14       | 8.1           | 14
+php8.1-node16       | 8.1           | 16
+php8.1-node17       | 8.1           | 17
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
@@ -72,7 +72,7 @@ RUN php artisan view:cache && \
     php artisan twig:cache && \
     php artisan route:cache
 
-FROM php:8.0-apache
+FROM php:8.1-apache
 
 # Install required PHP extensions
 RUN curl -L -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
