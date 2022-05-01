@@ -40,7 +40,7 @@ build-main:
     parallel:
         matrix:
             -   PHP_VERSION: ["7.4", "8.0", "8.1"]
-                NODE_VERSION: ["12", "14", "16", "17"]
+                NODE_VERSION: ["14", "16", "17", "18"]
     tags:
         - docker
     only:
