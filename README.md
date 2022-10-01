@@ -14,6 +14,7 @@ latest              | Latest (8.1)  | Latest LTS (16)
 php7.4              | 7.4           | Latest LTS (16)
 php8.0              | 8.0           | Latest LTS (16)
 php8.1              | 8.1           | Latest LTS (16)
+php8.2              | 8.2-rc        | Latest LTS (16)
 node14              | Latest (8.1)  | 14
 node16              | Latest (8.1)  | 16
 node18              | Latest (8.1)  | 18
@@ -26,6 +27,9 @@ php8.0-node18       | 8.0           | 18
 php8.1-node14       | 8.1           | 14
 php8.1-node16       | 8.1           | 16
 php8.1-node18       | 8.1           | 18
+php8.2-node14       | 8.2-rc        | 14
+php8.2-node16       | 8.2-rc        | 16
+php8.2-node18       | 8.2-rc        | 18
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
@@ -101,102 +105,102 @@ VOLUME /app/storage
 version: '3'
 
 services:
-    db:
-        image: mysql
-        restart: always
-        environment:
-            MYSQL_DATABASE: laravel
-            MYSQL_USER: laravel
-            MYSQL_PASSWORD: laravel
-            MYSQL_ROOT_PASSWORD: laravel
-        networks:
-            - internal_network
-        volumes:
-            - ./storage/database:/var/lib/mysql
+  db:
+    image: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+      MYSQL_ROOT_PASSWORD: laravel
+    networks:
+      - internal_network
+    volumes:
+      - ./storage/database:/var/lib/mysql
 
-    redis:
-        image: redis:alpine
-        restart: always
-        networks:
-            - internal_network
-        volumes:
-            - ./storage/redis:/data
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    networks:
+      - internal_network
+    volumes:
+      - ./storage/redis:/data
 
-    web:
-        build: .
-        restart: always
-        depends_on:
-            - db
-            - redis
-        networks:
-            - external_network
-            - internal_network
-        ports:
-            # [address]:[port]:80
-            - "127.0.0.1:8080:80"
-        volumes:
-            - ./.env:/app/.env
-            - ./bootstrap/cache:/app/bootstrap/cache
-            - ./storage:/app/storage
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+    ports:
+      # [address]:[port]:80
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./.env:/app/.env
+      - ./bootstrap/cache:/app/bootstrap/cache
+      - ./storage:/app/storage
 
-    # Remove this service and uncomment the horizon service if you are using Laravel Horizon
-    queue-worker:
-        build: .
-        restart: always
-        command: artisan queue:work
-        deploy:
-            mode: replicated
-            replicas: 8
-        depends_on:
-            - db
-            - redis
-        networks:
-            - external_network
-            - internal_network
-        volumes:
-            - ./.env:/app/.env
-            - ./bootstrap/cache:/app/bootstrap/cache
-            - ./storage:/app/storage
+  # Remove this service and uncomment the horizon service if you are using Laravel Horizon
+  queue-worker:
+    build: .
+    restart: unless-stopped
+    command: artisan queue:work
+    deploy:
+      mode: replicated
+      replicas: 8
+    depends_on:
+      - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      - ./.env:/app/.env
+      - ./bootstrap/cache:/app/bootstrap/cache
+      - ./storage:/app/storage
 
-    # horizon:
-    #     build: .
-    #     restart: always
-    #     command: artisan horizon
-    #     depends_on:
-    #         - db
-    #         - redis
-    #     networks:
-    #         - external_network
-    #         - internal_network
-    #     volumes:
-    #         - ./.env:/app/.env
-    #         - ./bootstrap/cache:/app/bootstrap/cache
-    #         - ./storage:/app/storage
+  # horizon:
+  #   build: .
+  #   restart: unless-stopped
+  #   command: artisan horizon
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   networks:
+  #     - external_network
+  #     - internal_network
+  #   volumes:
+  #     - ./.env:/app/.env
+  #     - ./bootstrap/cache:/app/bootstrap/cache
+  #     - ./storage:/app/storage
 
-    scheduler:
-        build: .
-        restart: always
-        command: |
-            echo "while [ true ]
-            do
-                ./artisan schedule:run --verbose --no-interaction &
-                sleep 60
-            done" | bash
-        depends_on:
-            - db
-            - redis
-        networks:
-            - external_network
-            - internal_network
-        volumes:
-            - ./.env:/app/.env
-            - ./bootstrap/cache:/app/bootstrap/cache
-            - ./storage:/app/storage
+  scheduler:
+    build: .
+    restart: unless-stopped
+    command: |
+      echo "while [ true ]
+      do
+          ./artisan schedule:run --verbose --no-interaction &
+          sleep 60
+      done" | bash
+    depends_on:
+      - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      - ./.env:/app/.env
+      - ./bootstrap/cache:/app/bootstrap/cache
+      - ./storage:/app/storage
 
 networks:
-    external_network:
-    internal_network:
-        internal: true
+  external_network:
+  internal_network:
+    internal: true
 ```
 
 </details>
