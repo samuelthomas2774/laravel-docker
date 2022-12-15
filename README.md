@@ -10,22 +10,26 @@ Tags
 
 Tag                 | PHP version   | Node.js version
 --------------------|---------------|-------------------
-latest              | Latest (8.2)  | Latest LTS (16)
-php8.0              | 8.0           | Latest LTS (16)
-php8.1              | 8.1           | Latest LTS (16)
-php8.2              | 8.2           | Latest LTS (16)
+latest              | Latest (8.2)  | Latest LTS (18)
+php8.0              | 8.0           | Latest LTS (18)
+php8.1              | 8.1           | Latest LTS (18)
+php8.2              | 8.2           | Latest LTS (18)
 node14              | Latest (8.2)  | 14
 node16              | Latest (8.2)  | 16
 node18              | Latest (8.2)  | 18
+node19              | Latest (8.2)  | 19
 php8.0-node14       | 8.0           | 14
 php8.0-node16       | 8.0           | 16
 php8.0-node18       | 8.0           | 18
+php8.0-node19       | 8.0           | 19
 php8.1-node14       | 8.1           | 14
 php8.1-node16       | 8.1           | 16
 php8.1-node18       | 8.1           | 18
+php8.1-node19       | 8.1           | 19
 php8.2-node14       | 8.2           | 14
 php8.2-node16       | 8.2           | 16
 php8.2-node18       | 8.2           | 18
+php8.2-node19       | 8.2           | 19
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
