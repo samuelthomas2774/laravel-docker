@@ -11,16 +11,12 @@ Tags
 Tag                 | PHP version   | Node.js version
 --------------------|---------------|-------------------
 latest              | Latest (8.2)  | Latest LTS (16)
-php7.4              | 7.4           | Latest LTS (16)
 php8.0              | 8.0           | Latest LTS (16)
 php8.1              | 8.1           | Latest LTS (16)
 php8.2              | 8.2           | Latest LTS (16)
 node14              | Latest (8.2)  | 14
 node16              | Latest (8.2)  | 16
 node18              | Latest (8.2)  | 18
-php7.4-node14       | 7.4           | 14
-php7.4-node16       | 7.4           | 16
-php7.4-node18       | 7.4           | 18
 php8.0-node14       | 8.0           | 14
 php8.0-node16       | 8.0           | 16
 php8.0-node18       | 8.0           | 18
