@@ -40,7 +40,7 @@ Alternate branches are pushed to the branch/tag name prefixed by `ref-`. For exa
 Registry
 ---
 
-All images (except alternate branches) are pushed to `https://gitlab.fancy.org.uk:5005` and `https://index.docker.io`.
+All images (except alternate branches) are pushed to `https://registry.fancy.org.uk` and `https://index.docker.io`.
 
 Usage as a build step
 ---
@@ -52,7 +52,7 @@ This image should include all extensions commonly used by Laravel. It is not des
 This Dockerfile updates the search path so you can run Artisan commands like `docker run --rm your-app-image artisan ...` (or `docker exec -it your-app-container artisan ...` to use an existing container).
 
 ```dockerfile
-FROM gitlab.fancy.org.uk:5005/samuel/laravel-docker:latest as build
+FROM registry.fancy.org.uk/samuel/laravel-docker:latest as build
 
 WORKDIR /app
 COPY . /app
@@ -60,27 +60,29 @@ COPY . /app
 # Install Composer dependencies
 RUN composer install
 
-# Build static files
-RUN npm install && \
-    npm run production && \
-    rm -rf node_modules
-
 # Compile all Blade and Twig templates and cache routes
 RUN php artisan view:cache && \
-    # Remove the next two lines if you aren't using TwigBridge
-    php artisan twig:lint && \
-    php artisan twig:cache && \
+    # Uncommect the next two lines if you are using TwigBridge
+    # php artisan twig:lint && \
+    # php artisan twig:cache && \
     php artisan route:cache
 
-FROM php:8.1-apache
+# Publish files from dependencies
+# RUN php artisan telescope:publish
+# RUN php artisan horizon:publish
+
+# Build static files
+# This is done in a separate stage so the image does not include node_modules
+FROM build as build-frontend
+RUN npm install
+RUN npm run production
+
+FROM php:8.2-apache
 
 # Install required PHP extensions
-RUN curl -L -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
-    chmod +x /usr/local/bin/install-php-extensions && \
-    # Only install extensions your app uses
-    install-php-extensions pdo_mysql zip intl gd bz2 opcache gmp pcntl bcmath && \
-    # Remove install-php-extension *in the same layer* as it isn't necessary to run the app
-    rm /usr/local/bin/install-php-extensions
+# Only install extensions your app uses
+RUN --mount=target=/usr/local/bin/install-php-extensions,source=/usr/local/bin/install-php-extensions,from=build \
+    install-php-extensions pdo_mysql zip intl gd bz2 opcache gmp pcntl bcmath
 
 # Enable the headers and rewrite Apache extensions
 RUN a2enmod headers && \
@@ -89,10 +91,24 @@ RUN a2enmod headers && \
 WORKDIR /app
 ENV PATH=/app:$PATH
 
-# Copy files from the build stage and link the public directory
+# Copy files from the build stage
 COPY --from=build /app /app
+COPY --from=build-frontend /app/public/build /app/public/build
+
+# Link public directories and set file permissions
 RUN rm -rf /var/www/html && \
-    ln -s /app/public /var/www/html
+    ln -s /app/public /var/www/html &&
+    chown -R www-data:www-data /app/storage && \
+    chown -R www-data:www-data /app/bootstrap/cache && \
+    php artisan storage:link
+
+# Run config:cache when starting the image
+RUN echo "#!/bin/sh" > /usr/bin/docker-entrypoint.sh && \
+    echo "php artisan config:cache" > /usr/bin/docker-entrypoint.sh && \
+    echo "exec \$@" > /usr/bin/docker-entrypoint.sh && \
+    chmod +x /usr/bin/docker-entrypoint.sh
+
+ENTRYPOINT [ "/usr/bin/docker-entrypoint.sh" ]
 
 VOLUME /app/storage
 ```
@@ -114,40 +130,40 @@ services:
       MYSQL_PASSWORD: laravel
       MYSQL_ROOT_PASSWORD: laravel
     networks:
-      - internal_network
+      - internal
     volumes:
-      - ./storage/database:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
 
   redis:
     image: redis:alpine
     restart: unless-stopped
     networks:
-      - internal_network
+      - internal
     volumes:
-      - ./storage/redis:/data
+      - redis-data:/data
 
   web:
     build: .
     restart: unless-stopped
+    env_file: .env
     depends_on:
       - db
       - redis
     networks:
-      - external_network
-      - internal_network
+      - default
+      - internal
     ports:
       # [address]:[port]:80
       - "127.0.0.1:8080:80"
     volumes:
-      - ./.env:/app/.env
-      - ./bootstrap/cache:/app/bootstrap/cache
-      - ./storage:/app/storage
+      - app-storage:/app/storage
 
   # Remove this service and uncomment the horizon service if you are using Laravel Horizon
   queue-worker:
     build: .
     restart: unless-stopped
     command: artisan queue:work
+    env_file: .env
     deploy:
       mode: replicated
       replicas: 8
@@ -155,27 +171,24 @@ services:
       - db
       - redis
     networks:
-      - external_network
-      - internal_network
+      - default
+      - internal
     volumes:
-      - ./.env:/app/.env
-      - ./bootstrap/cache:/app/bootstrap/cache
-      - ./storage:/app/storage
+      - app-storage:/app/storage
 
   # horizon:
   #   build: .
   #   restart: unless-stopped
   #   command: artisan horizon
+  #   env_file: .env
   #   depends_on:
   #     - db
   #     - redis
   #   networks:
-  #     - external_network
-  #     - internal_network
+  #     - default
+  #     - internal
   #   volumes:
-  #     - ./.env:/app/.env
-  #     - ./bootstrap/cache:/app/bootstrap/cache
-  #     - ./storage:/app/storage
+  #     - app-storage:/app/storage
 
   scheduler:
     build: .
@@ -186,20 +199,23 @@ services:
           ./artisan schedule:run --verbose --no-interaction &
           sleep 60
       done" | bash
+    env_file: .env
     depends_on:
       - db
       - redis
     networks:
-      - external_network
-      - internal_network
+      - default
+      - internal
     volumes:
-      - ./.env:/app/.env
-      - ./bootstrap/cache:/app/bootstrap/cache
-      - ./storage:/app/storage
+      - app-storage:/app/storage
+
+volumes:
+  mysql-data:
+  redis-data:
+  app-storage:
 
 networks:
-  external_network:
-  internal_network:
+  internal:
     internal: true
 ```
 
