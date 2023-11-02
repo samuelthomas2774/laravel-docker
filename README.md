@@ -14,6 +14,7 @@ latest              | Latest (8.2)  | Latest LTS (20)
 php8.0              | 8.0           | Latest LTS (20)
 php8.1              | 8.1           | Latest LTS (20)
 php8.2              | 8.2           | Latest LTS (20)
+php8.3              | 8.3-rc        | Latest LTS (20)
 node18              | Latest (8.2)  | 18
 node20              | Latest (8.2)  | 20
 node21              | Latest (8.2)  | 21
@@ -26,6 +27,9 @@ php8.1-node21       | 8.1           | 21
 php8.2-node18       | 8.2           | 18
 php8.2-node20       | 8.2           | 20
 php8.2-node21       | 8.2           | 21
+php8.3-node18       | 8.3-rc        | 18
+php8.3-node20       | 8.3-rc        | 20
+php8.3-node21       | 8.3-rc        | 21
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
