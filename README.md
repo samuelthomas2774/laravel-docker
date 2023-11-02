@@ -10,22 +10,22 @@ Tags
 
 Tag                 | PHP version   | Node.js version
 --------------------|---------------|-------------------
-latest              | Latest (8.2)  | Latest LTS (18)
-php8.0              | 8.0           | Latest LTS (18)
-php8.1              | 8.1           | Latest LTS (18)
-php8.2              | 8.2           | Latest LTS (18)
-node16              | Latest (8.2)  | 16
+latest              | Latest (8.2)  | Latest LTS (20)
+php8.0              | 8.0           | Latest LTS (20)
+php8.1              | 8.1           | Latest LTS (20)
+php8.2              | 8.2           | Latest LTS (20)
 node18              | Latest (8.2)  | 18
 node20              | Latest (8.2)  | 20
-php8.0-node16       | 8.0           | 16
+node21              | Latest (8.2)  | 21
 php8.0-node18       | 8.0           | 18
 php8.0-node20       | 8.0           | 20
-php8.1-node16       | 8.1           | 16
+php8.0-node21       | 8.0           | 21
 php8.1-node18       | 8.1           | 18
 php8.1-node20       | 8.1           | 20
-php8.2-node16       | 8.2           | 16
+php8.1-node21       | 8.1           | 21
 php8.2-node18       | 8.2           | 18
 php8.2-node20       | 8.2           | 20
+php8.2-node21       | 8.2           | 21
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
@@ -36,7 +36,7 @@ Alternate branches are pushed to the branch/tag name prefixed by `ref-`. For exa
 Registry
 ---
 
-All images (except alternate branches) are pushed to `https://registry.fancy.org.uk` and `https://index.docker.io`.
+All images (except alternate branches) are pushed to `https://registry.fancy.org.uk` (`registry.fancy.org.uk/samuel/laravel-docker`) and `https://index.docker.io` (`samuelthomas2774/laravel-docker`).
 
 Usage as a build step
 ---
@@ -100,8 +100,8 @@ RUN rm -rf /var/www/html && \
 
 # Run config:cache when starting the image
 RUN echo "#!/bin/sh" > /usr/bin/docker-entrypoint.sh && \
-    echo "php artisan config:cache" > /usr/bin/docker-entrypoint.sh && \
-    echo "exec \$@" > /usr/bin/docker-entrypoint.sh && \
+    echo "php artisan config:cache" >> /usr/bin/docker-entrypoint.sh && \
+    echo "exec \$@" >> /usr/bin/docker-entrypoint.sh && \
     chmod +x /usr/bin/docker-entrypoint.sh
 
 ENTRYPOINT [ "/usr/bin/docker-entrypoint.sh" ]
