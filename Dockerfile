@@ -5,12 +5,15 @@ FROM php:$PHP_VERSION-apache
 
 ARG NODE_VERSION=14
 
+ADD --chown=root:root nodesource.gpg /etc/apt/keyrings/nodesource.gpg
+
 # Update packages
 RUN apt-get update && \
     # Install gnupg, which is required for NodeSource
     apt-get install gnupg -y && \
     # Add NodeSource
-    ( curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - ) && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
     # Add install-php-extensions
     curl -L -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions && \
