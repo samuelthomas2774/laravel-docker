@@ -108,9 +108,10 @@ RUN echo "#!/bin/sh" > /usr/bin/docker-entrypoint.sh && \
     echo "exec \$@" >> /usr/bin/docker-entrypoint.sh && \
     chmod +x /usr/bin/docker-entrypoint.sh
 
-ENTRYPOINT [ "/usr/bin/docker-entrypoint.sh" ]
-
 VOLUME /app/storage
+
+ENTRYPOINT [ "/usr/bin/docker-entrypoint.sh" ]
+CMD [ "apache2-foreground" ]
 ```
 
 </details>
