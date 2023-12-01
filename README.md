@@ -10,26 +10,22 @@ Tags
 
 Tag                 | PHP version   | Node.js version
 --------------------|---------------|-------------------
-latest              | Latest (8.2)  | Latest LTS (20)
-php8.0              | 8.0           | Latest LTS (20)
+latest              | Latest (8.3)  | Latest LTS (20)
 php8.1              | 8.1           | Latest LTS (20)
 php8.2              | 8.2           | Latest LTS (20)
-php8.3              | 8.3-rc        | Latest LTS (20)
-node18              | Latest (8.2)  | 18
-node20              | Latest (8.2)  | 20
-node21              | Latest (8.2)  | 21
-php8.0-node18       | 8.0           | 18
-php8.0-node20       | 8.0           | 20
-php8.0-node21       | 8.0           | 21
+php8.3              | 8.3           | Latest LTS (20)
+node18              | Latest (8.3)  | 18
+node20              | Latest (8.3)  | 20
+node21              | Latest (8.3)  | 21
 php8.1-node18       | 8.1           | 18
 php8.1-node20       | 8.1           | 20
 php8.1-node21       | 8.1           | 21
 php8.2-node18       | 8.2           | 18
 php8.2-node20       | 8.2           | 20
 php8.2-node21       | 8.2           | 21
-php8.3-node18       | 8.3-rc        | 18
-php8.3-node20       | 8.3-rc        | 20
-php8.3-node21       | 8.3-rc        | 21
+php8.3-node18       | 8.3           | 18
+php8.3-node20       | 8.3           | 20
+php8.3-node21       | 8.3           | 21
 
 All images are based on the [library/php:`version`-apache](https://github.com/docker-library/php) images. No other variants are available.
 
@@ -77,7 +73,7 @@ FROM build as build-frontend
 RUN npm install
 RUN npm run production
 
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install required PHP extensions
 # Only install extensions your app uses

@@ -1,5 +1,5 @@
 variables:
-    LATEST_PHP_VERSION: "8.2"
+    LATEST_PHP_VERSION: "8.3"
     LATEST_NODE_VERSION: "20"
 
 before_script:
@@ -39,7 +39,7 @@ build-main:
             fi
     parallel:
         matrix:
-            -   PHP_VERSION: ["8.0", "8.1", "8.2", "8.3-rc"]
+            -   PHP_VERSION: ["8.1", "8.2", "8.3"]
                 NODE_VERSION: ["18", "20", "21"]
     tags:
         - docker
