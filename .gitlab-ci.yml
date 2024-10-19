@@ -6,9 +6,26 @@ image: alpine
 
 before_script:
   - apk add docker
+
+  # Configure SSH
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+  - echo "$SSH_CONFIG" > ~/.ssh/config
+  - chmod 644 ~/.ssh/known_hosts
+
+  # Docker image builder
+  - docker context create node-amd64 --docker "host=$DOCKER_BUILD_HOST_AMD64"
+  - docker buildx create --use --name builder --node builder-amd64 --platform linux/amd64 node-amd64
+
+  - docker context create node-arm64 --docker "host=$DOCKER_BUILD_HOST_ARM64"
+  - docker buildx create --append --name builder --node builder-arm64 --platform linux/arm64 node-arm64
+
+  # Docker registries
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  - |
-    [ "$DH_REGISTRY_IMAGE" != "" ] && docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
+  - if [ "$DH_REGISTRY_IMAGE" != "" ]; then docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"; fi
 
 build-main:
   stage: build
@@ -16,30 +33,30 @@ build-main:
     - PHP_IMAGE_TAG="$PHP_VERSION"
     - PHP_VERSION="${PHP_VERSION%-rc}"
 
-    - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
-
-    - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
-    - |
-      [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
+    - TAGS="--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION\""
+    - if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION\""; fi
 
     - |
       if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ] && [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
-          docker push "$CI_REGISTRY_IMAGE:latest"
-          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:latest" && docker push "$DH_REGISTRY_IMAGE:latest"
+          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:latest\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:latest\""; fi
       fi
+
     - |
       if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ]; then 
-          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
-          docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
-          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:node$NODE_VERSION"
+          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:node$NODE_VERSION\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:node$NODE_VERSION\""; fi
       fi
+
     - |
       if [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
-          docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
-          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION"
+          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION\""; fi
       fi
+
+    - echo $TAGS
+
+    - docker buildx build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" $TAGS --platform linux/amd64,linux/arm64 --push .
   parallel:
     matrix:
       - PHP_VERSION: ["8.1", "8.2", "8.3"]
@@ -54,11 +71,12 @@ build-main:
 build:
   stage: build
   script:
-    - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG"
+    - TAGS="--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG\""
+    - TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG\""
 
-    - docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
-    - docker push "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
+    - echo $TAGS
+
+    - docker buildx build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" $TAGS --platform linux/amd64,linux/arm64 --push .
   variables:
     PHP_VERSION: "$LATEST_PHP_VERSION"
     NODE_VERSION: "$LATEST_NODE_VERSION"
