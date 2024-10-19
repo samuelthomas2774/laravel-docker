@@ -1,71 +1,71 @@
 variables:
-    LATEST_PHP_VERSION: "8.3"
-    LATEST_NODE_VERSION: "20"
+  LATEST_PHP_VERSION: "8.3"
+  LATEST_NODE_VERSION: "20"
 
 before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - |
-        [ "$DH_REGISTRY_IMAGE" != "" ] && docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  - |
+    [ "$DH_REGISTRY_IMAGE" != "" ] && docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
 
 build-main:
-    stage: build
-    script:
-        - PHP_IMAGE_TAG="$PHP_VERSION"
-        - PHP_VERSION="${PHP_VERSION%-rc}"
+  stage: build
+  script:
+    - PHP_IMAGE_TAG="$PHP_VERSION"
+    - PHP_VERSION="${PHP_VERSION%-rc}"
 
-        - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
+    - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" .
 
-        - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
-        - |
-            [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
+    - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
+    - |
+      [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION"
 
-        - |
-            if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ] && [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-                docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
-                docker push "$CI_REGISTRY_IMAGE:latest"
-                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:latest" && docker push "$DH_REGISTRY_IMAGE:latest"
-            fi
-        - |
-            if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ]; then 
-                docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
-                docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
-                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:node$NODE_VERSION"
-            fi
-        - |
-            if [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-                docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
-                docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
-                [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION"
-            fi
-    parallel:
-        matrix:
-            -   PHP_VERSION: ["8.1", "8.2", "8.3"]
-                NODE_VERSION: ["18", "20", "21"]
-    tags:
-        - docker
-    only:
-        refs:
-            - main
-        changes:
-            - .gitlab-ci.yml
-            - Dockerfile
+    - |
+      if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ] && [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
+          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:latest"
+          docker push "$CI_REGISTRY_IMAGE:latest"
+          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:latest" && docker push "$DH_REGISTRY_IMAGE:latest"
+      fi
+    - |
+      if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ]; then 
+          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
+          docker push "$CI_REGISTRY_IMAGE:node$NODE_VERSION"
+          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:node$NODE_VERSION" && docker push "$DH_REGISTRY_IMAGE:node$NODE_VERSION"
+      fi
+    - |
+      if [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
+          docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
+          docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION"
+          [ "$DH_REGISTRY_IMAGE" != "" ] && docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION" "$DH_REGISTRY_IMAGE:php$PHP_VERSION" && docker push "$DH_REGISTRY_IMAGE:php$PHP_VERSION"
+      fi
+  parallel:
+    matrix:
+      - PHP_VERSION: ["8.1", "8.2", "8.3"]
+        NODE_VERSION: ["18", "20", "21"]
+  tags:
+    - docker
+  only:
+    refs:
+      - main
+    changes:
+      - .gitlab-ci.yml
+      - Dockerfile
 
 build:
-    stage: build
-    script:
-        - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" .
-        - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG"
+  stage: build
+  script:
+    - docker build --pull --no-cache --build-arg "PHP_VERSION=$PHP_VERSION" --build-arg "NODE_VERSION=$NODE_VERSION" --tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG"
 
-        - docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
-        - docker push "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
-    variables:
-        PHP_VERSION: "$LATEST_PHP_VERSION"
-        NODE_VERSION: "$LATEST_NODE_VERSION"
-    tags:
-        - docker
-    only:
-        changes:
-            - .gitlab-ci.yml
-            - Dockerfile
-    except:
-        - main
+    - docker tag "$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
+    - docker push "$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG"
+  variables:
+    PHP_VERSION: "$LATEST_PHP_VERSION"
+    NODE_VERSION: "$LATEST_NODE_VERSION"
+  tags:
+    - docker
+  only:
+    changes:
+      - .gitlab-ci.yml
+      - Dockerfile
+  except:
+    - main
