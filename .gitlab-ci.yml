@@ -43,7 +43,7 @@ build-main:
   parallel:
     matrix:
       - PHP_VERSION: ["8.1", "8.2", "8.3"]
-        NODE_VERSION: ["18", "20", "21"]
+        NODE_VERSION: ["18", "20", "22", "23"]
   only:
     refs:
       - main
