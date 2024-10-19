@@ -34,24 +34,24 @@ build-main:
     - PHP_VERSION="${PHP_VERSION%-rc}"
 
     - TAGS="--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION\""
-    - if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION\""; fi
+    - if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS --tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION\""; fi
 
     - |
       if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ] && [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:latest\""
-          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:latest\""; fi
+          TAGS="$TAGS --tag \"$CI_REGISTRY_IMAGE:latest\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS --tag \"$DH_REGISTRY_IMAGE:latest\""; fi
       fi
 
     - |
       if [ "$PHP_VERSION" = "$LATEST_PHP_VERSION" ]; then 
-          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:node$NODE_VERSION\""
-          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:node$NODE_VERSION\""; fi
+          TAGS="$TAGS --tag \"$CI_REGISTRY_IMAGE:node$NODE_VERSION\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS --tag \"$DH_REGISTRY_IMAGE:node$NODE_VERSION\""; fi
       fi
 
     - |
       if [ "$NODE_VERSION" = "$LATEST_NODE_VERSION" ]; then 
-          TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION\""
-          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS\n--tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION\""; fi
+          TAGS="$TAGS --tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION\""
+          if [ "$DH_REGISTRY_IMAGE" != "" ]; then TAGS="$TAGS --tag \"$DH_REGISTRY_IMAGE:php$PHP_VERSION\""; fi
       fi
 
     - echo $TAGS
@@ -72,7 +72,7 @@ build:
   stage: build
   script:
     - TAGS="--tag \"$CI_REGISTRY_IMAGE:php$PHP_VERSION-node$NODE_VERSION-$CI_COMMIT_REF_SLUG\""
-    - TAGS="$TAGS\n--tag \"$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG\""
+    - TAGS="$TAGS --tag \"$CI_REGISTRY_IMAGE:ref-$CI_COMMIT_REF_SLUG\""
 
     - echo $TAGS
 
