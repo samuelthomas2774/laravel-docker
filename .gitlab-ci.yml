@@ -59,7 +59,7 @@ build-main:
     - docker buildx build --pull --no-cache --build-arg "PHP_VERSION=$PHP_IMAGE_TAG" --build-arg "NODE_VERSION=$NODE_VERSION" $TAGS --platform linux/amd64,linux/arm64 --push .
   parallel:
     matrix:
-      - PHP_VERSION: ["8.1", "8.2", "8.3"]
+      - PHP_VERSION: ["8.1", "8.2", "8.3", "8.4-rc"]
         NODE_VERSION: ["18", "20", "22", "23"]
   only:
     refs:
