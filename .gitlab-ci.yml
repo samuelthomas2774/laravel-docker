@@ -5,7 +5,7 @@ variables:
 image: alpine
 
 before_script:
-  - apk add docker
+  - apk add docker openssh
 
   # Configure SSH
   - eval $(ssh-agent -s)
